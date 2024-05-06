@@ -383,37 +383,6 @@ export default function Home() {
             >
               <Image src={Info} alt="Github" className="w-4 h-4"></Image>
             </button>
-            {/* <button
-              className="bg-slate-50 border border-slate-300 shadow-sm px-2 py-1 rounded-xl flex gap-2 justify-center items-center"
-              onClick={() => {
-                setShowQuickStart(true);
-                localStorage.setItem("showQuickStart", "true");
-              }}
-            >
-              <Image src={Start} alt="Start" className="w-4 h-4"></Image>
-              Quick Start
-            </button> */}
-            {/* <button
-              className="bg-black px-3 py-1 rounded-xl text-slate-50 flex justify-center items-center backdrop-blur-lg duration-200"
-              onClick={() => {
-                setShowQuickStart(true);
-                localStorage.setItem("showQuickStart", "true");
-              }}
-            >
-              Quick Start{" "}
-              <div className=" arrow flex items-center justify-center">
-                <div className="arrowMiddle"></div>
-                <div>
-                  <Image
-                    src={Arrow}
-                    alt=""
-                    width={14}
-                    height={14}
-                    className="arrowSide"
-                  ></Image>
-                </div>
-              </div>
-            </button> */}
           </div>
         </div>
         <div className="mt-20">
@@ -423,10 +392,11 @@ export default function Home() {
             can be used to make predictions about patient pneumonia diagnosis.
             Before using this utility, please review the{" "}
             <Link
-              href={""}
+              href={"/termsofuse"}
+              target="_blank"
               className="hover:text-cyan-700 cursor-pointer duration-100"
             >
-              Intended Purpose Disclaimer.
+              Terms of Use.
             </Link>
           </p>
         </div>
@@ -450,8 +420,8 @@ export default function Home() {
                   <span className="px-2 py-1 font-normal bg-slate-50 rounded-xl border border-slate-300">
                     PNG
                   </span>{" "}
-                  format and no larger than 5 megabytes. The image should be a
-                  chest X-ray oriented as shown in the quick start menu.
+                  format. The image should be a chest X-ray oriented as shown in
+                  the quick start menu.
                 </p>
                 <motion.label
                   initial={{ opacity: 0, y: 30 }}
@@ -715,7 +685,6 @@ export default function Home() {
               </motion.div>
             )}
         </AnimatePresence>
-        {/* <Footer></Footer> */}
         <div id="footer">
           <div className="max-w-7xl m-auto relative z-20 py-20 flex justify-between flex-col lg:flex-row gap-12">
             <div className="flex flex-col justify-between items-start gap-6 max-w-sm">
@@ -734,14 +703,6 @@ export default function Home() {
                     Tyler Haisman
                   </Link>
                 </p>
-                {/* <p className="mt-6 opacity-30">
-              Permission is hereby granted to use, copy, modify, merge, publish,
-              distribute, sublicense, and/or sell copies of the Software,
-              subject to the following conditions:
-            </p>
-            <p className="mt-6 opacity-30">
-              THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY.
-            </p> */}
               </div>
             </div>
             <hr className="h-0 w-20 border opacity-10 rounded-full lg:w-0 lg:h-40" />
