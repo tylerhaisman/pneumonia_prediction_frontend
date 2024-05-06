@@ -54,29 +54,26 @@ const Footer = () => {
         <div className="">
           <ul className="flex flex-col gap-3">
             <li>
-              <h1 className="text-base">About</h1>
+              <h1 className="text-base">GitHub</h1>
             </li>
             <li className="cursor-pointer hover:text-cyan-700 duration-100">
-              <p>Quick Start</p>
+              <p>Front-end repository</p>
             </li>
             <li className="cursor-pointer hover:text-cyan-700 duration-100">
-              <p>GitHub</p>
-            </li>
-            <li className="cursor-pointer hover:text-cyan-700 duration-100">
-              <p>How Does It Work?</p>
+              <p>Back-end repository</p>
             </li>
           </ul>
         </div>
         <div className="">
           <ul className="flex flex-col gap-3">
             <li>
-              <h1 className="text-base">Contact</h1>
+              <h1 className="text-base">Information</h1>
             </li>
             <li className="cursor-pointer hover:text-cyan-700 duration-100">
-              <p>Feedback</p>
+              <p>Quick Start</p>
             </li>
             <li className="cursor-pointer hover:text-cyan-700 duration-100">
-              <p>Connect With Me</p>
+              <p>How Does It Work?</p>
             </li>
           </ul>
         </div>
