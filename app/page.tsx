@@ -12,26 +12,65 @@ import { useRouter } from "next/navigation";
 import Footer from "@/components/footer/footer";
 import { useState, useEffect, useRef } from "react";
 import { toast, Toaster } from "react-hot-toast";
+import { motion, AnimatePresence } from "framer-motion";
 
 export default function Home() {
   const router = useRouter();
-  const [imageData, setImageData] = useState<FormData>();
+  const [imageData, setImageData] = useState<FormData | null>(null);
   const [imageFileName, setImageFileName] = useState("");
   const [pneumoniaLikely, setPneumoniaLikely] = useState(null);
-  const [overallConfidence, setOverallConfidence] = useState("");
+  const [overallConfidence, setOverallConfidence] = useState(NaN);
   const [pneumoniaType, setPneumoniaType] = useState("");
-  const [typeConfidence, setTypeConfidence] = useState("");
+  const [typeConfidence, setTypeConfidence] = useState(NaN);
+  const [preview, setPreview] = useState("");
+  const [draggedOver, setDraggedOver] = useState(false);
 
   const handleClearValues = async () => {
-    window.location.reload();
+    setImageData(null);
+    setImageFileName("");
+    setPneumoniaLikely(null);
+    setOverallConfidence(NaN);
+    setPneumoniaType("");
+    setTypeConfidence(NaN);
+    setPreview("");
+    setDraggedOver(false);
   };
 
-  const handleImageUpload = async (event: any) => {
-    const file = event.target.files[0];
+  const handleDragOver = (e: React.DragEvent<HTMLLabelElement>) => {
+    e.preventDefault();
+    setDraggedOver(true);
+  };
+
+  const handleDragEnter = (e: React.DragEvent<HTMLLabelElement>) => {
+    e.preventDefault();
+  };
+
+  const handleDragLeave = (e: React.DragEvent<HTMLLabelElement>) => {
+    e.preventDefault();
+    setDraggedOver(false);
+  };
+
+  const handleDrop = (e: React.DragEvent<HTMLLabelElement>) => {
+    e.preventDefault();
+    const file = e.dataTransfer.files[0];
+    const objectUrl = URL.createObjectURL(file);
+    setPreview(objectUrl);
     const data = new FormData();
     data.append("image", file);
     setImageFileName(file.name);
     setImageData(data);
+    setDraggedOver(false);
+  };
+
+  const handleImageUpload = async (event: any) => {
+    const file = event.target.files[0];
+    const objectUrl = URL.createObjectURL(file);
+    setPreview(objectUrl);
+    const data = new FormData();
+    data.append("image", file);
+    setImageFileName(file.name);
+    setImageData(data);
+    setDraggedOver(false);
   };
 
   const handleSubmitPrediction = async () => {
@@ -53,11 +92,12 @@ export default function Home() {
           const result = await response.json();
           // console.log(result);
           setPneumoniaLikely(result.pneumonia_likely);
-          setOverallConfidence(result.overall_confidence);
+          setOverallConfidence(
+            Math.round(parseFloat(result.overall_confidence))
+          );
           setPneumoniaType(result.pneumonia_type);
-          setTypeConfidence(result.type_confidence);
+          setTypeConfidence(Math.round(parseFloat(result.type_confidence)));
           toast.remove();
-          toast.success("Success!");
         } else {
           toast.remove();
           toast.error("An error occured.");
@@ -70,6 +110,40 @@ export default function Home() {
       }
     }
   };
+
+  function renderDonut(percentage: number) {
+    const radius = 50;
+    const circumference = 2 * Math.PI * radius;
+    const strokeDashoffset = circumference - (percentage / 100) * circumference;
+    return (
+      <div className="relative w-20 h-20">
+        <svg
+          className="absolute top-0 left-0 w-full h-full"
+          viewBox="0 0 140 140"
+        >
+          <circle
+            className="donut-ring"
+            cx="70"
+            cy="70"
+            r={radius}
+            strokeWidth="6"
+          />
+          <circle
+            className="donut-segment"
+            cx="70"
+            cy="70"
+            r={radius}
+            strokeWidth="6"
+            strokeDasharray={circumference}
+            strokeDashoffset={strokeDashoffset}
+          />
+        </svg>
+        <div className="absolute inset-0 flex items-center justify-center">
+          {percentage}%
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-slate-50 text-black w-full px-6">
@@ -120,136 +194,219 @@ export default function Home() {
             </Link>
           </p>
         </div>
-        {pneumoniaLikely == null && overallConfidence == "" && (
-          <div className="mt-20 p-6 rounded-xl bg-gradient-to-br from-cyan-700/20 to-cyan-700/5">
-            <h1>Upload your image file here:</h1>
-            <p>
-              The file must be an image file in{" "}
-              <span className="px-2 py-1 font-normal bg-slate-50 rounded-xl border border-slate-300">
-                JPEG
-              </span>{" "}
-              or{" "}
-              <span className="px-2 py-1 font-normal bg-slate-50 rounded-xl border border-slate-300">
-                PNG
-              </span>{" "}
-              format and no larger than 5 megabytes. The image should be a chest
-              X-ray oriented as shown in the quick start menu.
-            </p>
-            <label
-              className="bg-slate-50 hover:bg-slate-100 duration-100 px-6 py-16 rounded-xl border border-dashed border-slate-300 mt-6 flex flex-col justify-center items-center text-center cursor-pointer"
-              htmlFor="fileInput"
+        <AnimatePresence>
+          {pneumoniaLikely == null && Number.isNaN(overallConfidence) && (
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.2, delay: 0 }}
+              className="mt-20 p-6 rounded-xl bg-gradient-to-br from-cyan-700/20 to-cyan-700/5 border border-cyan-700/20"
             >
-              {!imageFileName && !imageData && (
-                <div className="flex flex-col justify-center items-center text-center">
-                  <Image src={ImageIcon} alt="" className="w-16 h-16"></Image>
-                  <div className="flex gap-1 mt-6">
-                    <h2 className="font-black">Click to upload</h2> or drag and
-                    drop
-                  </div>
-                  <p className="text-black/30">Supports: JPEG, PNG</p>
-                </div>
-              )}
-              {imageFileName && imageData && (
-                <div className="flex flex-col justify-center items-center text-center">
-                  <Image src={Check} alt="" className="w-16 h-16"></Image>
-                  <div className="flex gap-1 mt-6">
-                    <h2 className="font-black">File uploaded:</h2>
-                    {imageFileName}
-                  </div>
-                  <p className="text-black/30">
-                    Press the "Initiate Prediction Calculation" button to
-                    continue.
-                  </p>
-                </div>
-              )}
-            </label>
-            <input
-              type="file"
-              accept="image/png, image/jpeg, image/jpg"
-              onChange={handleImageUpload}
-              id="fileInput"
-              className="hidden"
-            />
-            <button
-              className="mt-6 bg-cyan-700 px-6 py-3 rounded-xl text-slate-50 flex justify-center items-center backdrop-blur-lg duration-200"
-              onClick={() => handleSubmitPrediction()}
-            >
-              Initiate prediction calculation{" "}
-              <div className=" arrow flex items-center justify-center">
-                <div className="arrowMiddle"></div>
-                <div>
-                  <Image
-                    src={Arrow}
-                    alt=""
-                    width={14}
-                    height={14}
-                    className="arrowSide"
-                  ></Image>
-                </div>
-              </div>
-            </button>
-          </div>
-        )}
-        {pneumoniaLikely != null && overallConfidence != "" && (
-          <div className="mt-20 p-6 rounded-xl bg-gradient-to-br from-cyan-700/20 to-cyan-700/5">
-            <h1>Prediction results:</h1>
-            <div className="flex flex-col justify-center items-center text-center">
-              {pneumoniaLikely && (
-                <h1 className="bg-red-100 py-1 px-2 rounded-xl border border-red-300 text-red-600">
-                  Pneumonia likely
-                </h1>
-              )}
-              {!pneumoniaLikely && (
-                <h1 className="bg-green-100 py-1 px-2 rounded-xl border border-green-300 text-green-600">
-                  Pneumonia unlikely
-                </h1>
-              )}
-              <div className="flex gap-1 mt-3 justify-center items-center">
-                <h2>Confidence level:</h2>
-                <p className="bg-slate-50 px-1 rounded-lg border border-slate-300">
-                  {overallConfidence}%
-                </p>
-              </div>
-              {pneumoniaType != null &&
-                pneumoniaType != "" &&
-                pneumoniaType != null &&
-                typeConfidence != "" && (
-                  <div className="bg-slate-50 p-6 mt-3 rounded-xl border border-slate-300">
-                    <div className="flex gap-1 mt-3 justify-center items-center">
-                      <h2>Classification prediction:</h2>
-                      <p className="bg-cyan-700/20 px-1 rounded-lg border border-cyan-700/50">
-                        {pneumoniaType}
-                      </p>
+              <h1>Upload your image file here:</h1>
+              <p>
+                The file must be an image file in{" "}
+                <span className="px-2 py-1 font-normal bg-slate-50 rounded-xl border border-slate-300">
+                  JPEG
+                </span>{" "}
+                or{" "}
+                <span className="px-2 py-1 font-normal bg-slate-50 rounded-xl border border-slate-300">
+                  PNG
+                </span>{" "}
+                format and no larger than 5 megabytes. The image should be a
+                chest X-ray oriented as shown in the quick start menu.
+              </p>
+              <motion.label
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0 }}
+                className={
+                  draggedOver
+                    ? "bg-slate-100 duration-100 px-6 py-16 rounded-xl border border-dashed border-slate-300 mt-6 flex flex-col justify-center items-center text-center cursor-pointer"
+                    : "bg-slate-50 hover:bg-slate-100 duration-100 px-6 py-16 rounded-xl border border-dashed border-slate-300 mt-6 flex flex-col justify-center items-center text-center cursor-pointer"
+                }
+                htmlFor="fileInput"
+                onDragOver={handleDragOver}
+                onDragEnter={handleDragEnter}
+                onDragLeave={handleDragLeave}
+                onDrop={handleDrop}
+              >
+                {!imageFileName && !imageData && (
+                  <div className="flex flex-col justify-center items-center text-center">
+                    <Image
+                      src={ImageIcon}
+                      alt=""
+                      className={
+                        draggedOver
+                          ? "w-16 h-16 duration-200 -mt-2 mb-2"
+                          : "w-16 h-16 duration-200"
+                      }
+                    ></Image>
+                    <div className="flex gap-1 mt-6">
+                      <h2 className="font-black">Click to upload</h2> or drag
+                      and drop
                     </div>
-                    <div className="flex gap-1 mt-3 justify-center items-center">
-                      <h2>Confidence level:</h2>
-                      <p className="bg-slate-50 px-1 rounded-lg border border-slate-300">
-                        {typeConfidence}%
-                      </p>
-                    </div>
+                    <p className="text-black/30">Supports: JPEG, PNG</p>
                   </div>
                 )}
-            </div>
-            <button
-              className="mt-6 bg-cyan-700 px-6 py-3 rounded-xl text-slate-50 flex justify-center items-center backdrop-blur-lg duration-200"
-              onClick={() => handleClearValues()}
+                {imageFileName && imageData && (
+                  <div className="flex flex-col justify-center items-center text-center">
+                    <div className="relative">
+                      <motion.div
+                        className=""
+                        initial={{ opacity: 0, y: 30 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.3, delay: 0 }}
+                      >
+                        <Image
+                          src={Check}
+                          alt=""
+                          className="w-10 h-10 absolute bg-slate-50 rounded-full p-1 -right-4 -top-4 shadow-md z-20"
+                        ></Image>
+                      </motion.div>
+                      <motion.div
+                        className=""
+                        initial={{ opacity: 0, y: 30, z: 1 }}
+                        animate={{ opacity: 1, y: 0, z: 1 }}
+                        transition={{ duration: 0.7, delay: 0 }}
+                      >
+                        <Image
+                          src={preview}
+                          alt="Preview"
+                          width="0"
+                          height="0"
+                          className="w-24 max-h-24 rounded-xl shadow-md relative z-10"
+                        ></Image>
+                      </motion.div>
+                    </div>
+                    <div className="flex gap-1 mt-6">
+                      <h2 className="font-black">File uploaded:</h2>
+                      {imageFileName}
+                    </div>
+                    <p className="text-black/30">
+                      Press the "Initiate Prediction Calculation" button to
+                      continue.
+                    </p>
+                  </div>
+                )}
+              </motion.label>
+              <input
+                type="file"
+                accept="image/png, image/jpeg, image/jpg"
+                onChange={handleImageUpload}
+                id="fileInput"
+                className="hidden"
+              />
+              {imageData && imageFileName && (
+                <div className="flex gap-3">
+                  <motion.button
+                    className="mt-6 bg-cyan-700 px-6 py-3 rounded-xl text-slate-50 flex justify-center items-center backdrop-blur-lg duration-200"
+                    onClick={() => handleSubmitPrediction()}
+                    initial={{ opacity: 0, y: 30 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{
+                      duration: 0.2,
+                      delay: 0,
+                    }}
+                  >
+                    Initiate prediction calculation{" "}
+                    <div className=" arrow flex items-center justify-center">
+                      <div className="arrowMiddle"></div>
+                      <div>
+                        <Image
+                          src={Arrow}
+                          alt=""
+                          width={14}
+                          height={14}
+                          className="arrowSide"
+                        ></Image>
+                      </div>
+                    </div>
+                  </motion.button>
+                  <motion.button
+                    className="mt-6 bg-slate-50 px-6 py-3 rounded-xl flex justify-center items-center backdrop-blur-lg duration-200 border border-slate-300"
+                    onClick={() => handleClearValues()}
+                    initial={{ opacity: 0, y: 30 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.2, delay: 0.1 }}
+                  >
+                    Cancel
+                  </motion.button>
+                </div>
+              )}
+            </motion.div>
+          )}
+        </AnimatePresence>
+        <AnimatePresence>
+          {pneumoniaLikely != null && !Number.isNaN(overallConfidence) && (
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.2, delay: 0.5 }}
+              className="mt-20 p-6 rounded-xl bg-gradient-to-br from-cyan-700/20 to-cyan-700/5 border border-cyan-700/20"
             >
-              Upload another image{" "}
-              <div className=" arrow flex items-center justify-center">
-                <div className="arrowMiddle"></div>
-                <div>
+              <h1>Prediction results:</h1>
+              <div className="mt-6 flex gap-6 md:flex-row flex-col">
+                <div className="flex flex-col flex-1 justify-center items-center text-center bg-slate-50 rounded-xl border border-slate-300 p-6">
+                  {pneumoniaLikely && <h1>Pneumonia likely</h1>}
+                  {!pneumoniaLikely && <h1>Pneumonia unlikely</h1>}
+                  <div className="flex flex-col mt-3 justify-center items-center w-full">
+                    <h2>Confidence level:</h2>
+                    {renderDonut(overallConfidence)}
+                  </div>
+                  {pneumoniaType != null &&
+                    pneumoniaType != "" &&
+                    pneumoniaType != null &&
+                    !Number.isNaN(typeConfidence) && (
+                      <div className="w-full">
+                        <hr className="w-full mt-6 mb-6" />
+                        <div className="flex gap-1 mt-3 justify-center items-center">
+                          <h2>Classification:</h2>
+                          <p className="bg-cyan-700/20 px-1 rounded-lg border border-cyan-700/50">
+                            {pneumoniaType}
+                          </p>
+                        </div>
+                        <div className="flex flex-col mt-3 justify-center items-center">
+                          <h2>Confidence level:</h2>
+                          {renderDonut(typeConfidence)}
+                        </div>
+                      </div>
+                    )}
+                </div>
+                <div className="flex flex-col flex-1 justify-center items-center text-center bg-slate-50 rounded-xl border border-slate-300 p-6">
                   <Image
-                    src={Arrow}
-                    alt=""
-                    width={14}
-                    height={14}
-                    className="arrowSide"
+                    src={preview}
+                    alt="Preview"
+                    width="0"
+                    height="0"
+                    className="w-full rounded-xl mt-3 shadow-md"
                   ></Image>
+                  <div className="mt-6">
+                    <h2>Reference image: </h2>
+                    <p>{imageFileName}</p>
+                  </div>
                 </div>
               </div>
-            </button>
-          </div>
-        )}
+              <button
+                className="mt-6 bg-cyan-700 px-6 py-3 rounded-xl text-slate-50 flex justify-center items-center backdrop-blur-lg duration-200"
+                onClick={() => handleClearValues()}
+              >
+                Upload another image{" "}
+                <div className=" arrow flex items-center justify-center">
+                  <div className="arrowMiddle"></div>
+                  <div>
+                    <Image
+                      src={Arrow}
+                      alt=""
+                      width={14}
+                      height={14}
+                      className="arrowSide"
+                    ></Image>
+                  </div>
+                </div>
+              </button>
+            </motion.div>
+          )}
+        </AnimatePresence>
         <Footer></Footer>
       </div>
     </div>

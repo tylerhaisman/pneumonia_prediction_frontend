@@ -114,3 +114,17 @@ button .arrowSide {
   border-radius: 10px;
   /* Customize the scrollbar thumb */
 }
+
+/* DONUT CHART */
+.donut-ring {
+  fill: transparent;
+  stroke: #d2d6dc;
+}
+
+.donut-segment {
+  fill: transparent;
+  stroke: #10b981;
+  stroke-linecap: round;
+  transform: rotate(-90deg);
+  transform-origin: 50% 50%;
+}
