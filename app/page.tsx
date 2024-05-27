@@ -7,11 +7,9 @@ import Github from "../public/icons/github-svgrepo-com.svg";
 import Info from "../public/icons/info-circle-svgrepo-com.svg";
 import ImageIcon from "../public/icons/upload-minimalistic-svgrepo-com (1).svg";
 import Check from "../public/icons/check-circle-svgrepo-com (1).svg";
-import Start from "../public/icons/start-favorite-svgrepo-com.svg";
 import Lungs from "../public/icons/lungs-lung-svgrepo-com.svg";
 import Plus from "../public/icons/plus-large-svgrepo-com (1).svg";
 import { useRouter } from "next/navigation";
-import Footer from "@/components/footer/footer";
 import { useState, useEffect, useRef } from "react";
 import { toast, Toaster } from "react-hot-toast";
 import { motion, AnimatePresence } from "framer-motion";
@@ -327,7 +325,12 @@ export default function Home() {
                 </p>
                 <hr className="bg-slate-50" />
                 <p className="p-3 hover:bg-slate-200 cursor-pointer">
-                  <Link href={"/howdoesitwork"} target="_blank">
+                  <Link
+                    href={
+                      "https://www.tylerhaisman.com/documents/pneumonia_prediction_utility/pneumonia_prediction_utility.pdf"
+                    }
+                    target="_blank"
+                  >
                     How Does It Work?
                   </Link>
                 </p>
@@ -765,7 +768,12 @@ export default function Home() {
                   <p>Quick Start</p>
                 </li>
                 <li className="cursor-pointer hover:text-cyan-700 duration-100">
-                  <Link href={"/howdoesitwork"} target="_blank">
+                  <Link
+                    href={
+                      "https://www.tylerhaisman.com/documents/pneumonia_prediction_utility/pneumonia_prediction_utility.pdf"
+                    }
+                    target="_blank"
+                  >
                     How Does It Work?
                   </Link>
                 </li>
